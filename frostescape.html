@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HET FROST ARCHIEF</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #0b0b0d;
+      color: #e0e0e0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Noise background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      opacity: 0.03;
+      z-index: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      animation: grain 8s steps(10) infinite;
+    }
+
+    @keyframes grain {
+      0%, 100% { transform: translate(0, 0); }
+      20% { transform: translate(-5%, -10%); }
+      40% { transform: translate(7%, 5%); }
+      60% { transform: translate(-10%, 10%); }
+      80% { transform: translate(5%, -5%); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .server-light {
+      width: 8px;
+      height: 8px;
+      background: #00ff00;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #00ff00;
+      animation: flicker 2s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    h1 {
+      color: white;
+      letter-spacing: 0.05em;
+      font-size: 24px;
+      font-weight: normal;
+    }
+
+    .header-subtitle {
+      color: #888;
+      opacity: 0.7;
+      font-size: 13px;
+      margin-bottom: 48px;
+    }
+
+    .intro {
+      color: #b0b0b0;
+      max-width: 768px;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 64px;
+    }
+
+    .database-access {
+      color: #666;
+      font-size: 11px;
+      margin-top: 24px;
+      opacity: 0.6;
+    }
+
+    .blink-cursor { animation: blink 1s step-end infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    .gallery-section { margin-bottom: 48px; }
+
+    .gallery-header {
+      color: #777;
+      margin-bottom: 24px;
+      font-size: 12px;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .image-item {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .image-item img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      border: 1px solid #333;
+      opacity: 0.8;
+      transition: opacity 0.3s;
+      filter: contrast(1.1) brightness(0.8);
+      image-rendering: pixelated;
+      position: relative;
+      z-index: 1;
+    }
+
+    .image-item:hover img { opacity: 1; }
+
+    /* Glitch effect on hover */
+    .image-item:hover img {
+      animation: glitch 0.5s infinite;
+      filter: none;
+    }
+    .image-item:hover img::before,
+    .image-item:hover img::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: inherit;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      image-rendering: pixelated;
+    }
+    .image-item:hover img::before {
+      animation: glitch-anim-1 0.5s infinite;
+      clip-path: polygon(0 2%, 100% 2%, 100% 5%, 0 5%);
+      left: -2px;
+      filter: drop-shadow(1px 0 red);
+      z-index: 2;
+    }
+    .image-item:hover img::after {
+      animation: glitch-anim-2 0.5s infinite;
+      clip-path: polygon(0 15%, 100% 15%, 100% 20%, 0 20%);
+      left: 2px;
+      filter: drop-shadow(-1px 0 blue);
+      z-index: 2;
+    }
+
+    @keyframes glitch {
+      0% {
+        transform: translate(0);
+        filter: none;
+      }
+      20% {
+        transform: translate(-2px, 2px);
+        filter: drop-shadow(2px 0 red) drop-shadow(-2px 0 blue);
+      }
+      40% {
+        transform: translate(2px, -2px);
+        filter: drop-shadow(-2px 0 red) drop-shadow(2px 0 blue);
+      }
+      60% {
+        transform: translate(-1px, 1px);
+        filter: drop-shadow(1px 0 red) drop-shadow(-1px 0 blue);
+      }
+      80% {
+        transform: translate(1px, -1px);
+        filter: drop-shadow(-1px 0 red) drop-shadow(1px 0 blue);
+      }
+      100% {
+        transform: translate(0);
+        filter: none;
+      }
+    }
+
+    @keyframes glitch-anim-1 {
+      0% {
+        transform: translate(0);
+      }
+      20% {
+        transform: translate(-2px, -2px);
+      }
+      40% {
+        transform: translate(2px, 2px);
+      }
+      60% {
+        transform: translate(-1px, -1px);
+      }
+      80% {
+        transform: translate(1px, 1px);
+      }
+      100% {
+        transform: translate(0);
+      }
+    }
+
+    @keyframes glitch-anim-2 {
+      0% {
+        transform: translate(0);
+      }
+      20% {
+        transform: translate(2px, 2px);
+      }
+      40% {
+        transform: translate(-2px, -2px);
+      }
+      60% {
+        transform: translate(1px, 1px);
+      }
+      80% {
+        transform: translate(-1px, -1px);
+      }
+      100% {
+        transform: translate(0);
+      }
+    }
+
+    .correct-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 255, 255, 0.03);
+      animation: pulse-cyan 3s ease-in-out infinite;
+      pointer-events: none;
+      border-radius: 0;
+      z-index: 1;
+    }
+
+    @keyframes pulse-cyan { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
+    .image-label {
+      color: #555;
+      margin-top: 8px;
+      font-size: 10px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    footer {
+      border-top: 1px solid #222;
+      padding-top: 24px;
+      margin-top: 64px;
+      color: #555;
+      font-size: 11px;
+    }
+
+    .footer-status {
+      color: #666;
+      opacity: 0.6;
+      animation: pulse 2s infinite;
+    }
+    .footer-hidden {
+      color: #0b0b0d;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+    }
+    .footer-hidden:hover {
+      color: #00ffff; 
+      transition: color 0.4s ease;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+    .ghost-cursor {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      color: #00ff00;
+      font-size: 20px;
+      animation: blink 1s step-end infinite;
+    }
+
+    /* Tooltip styling */
+    .image-item .tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      background: rgba(0,0,0,0.85);
+      font-size: 10px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+      font-family: 'Courier New', monospace;
+      z-index: 20;
+      user-select: none;
+    }
+    .image-item:hover .tooltip {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .image-item.error .tooltip {
+      color: #ff4444;
+    }
+    .image-item.correct-image .tooltip {
+      color: #00ffff;
+    }
+    /* Login overlay styles */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(3,5,7,0.85);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+    .login-card {
+      width: 420px;
+      max-width: calc(100% - 40px);
+      background: linear-gradient(180deg, rgba(10,12,14,0.98), rgba(6,7,9,0.98));
+      border: 1px solid rgba(255,255,255,0.04);
+      padding: 22px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      border-radius: 10px;
+      color: #dfeff0;
+      text-align: left;
+      font-family: 'Courier New', monospace;
+    }
+    .login-card h2 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      letter-spacing: 0.06em;
+      color: #e8f7f7;
+    }
+    .login-card .login-sub {
+      color: #9aa3a6;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .login-card label {
+      display:block;
+      font-size:12px;
+      color:#98a0a2;
+      margin-top:10px;
+      margin-bottom:6px;
+    }
+    .login-card input[type="text"],
+    .login-card input[type="password"] {
+      width:100%;
+      padding:10px 12px;
+      border-radius:6px;
+      border:1px solid rgba(255,255,255,0.04);
+      background: rgba(0,0,0,0.35);
+      color:#e6f6f6;
+      font-family: 'Courier New', monospace;
+      font-size:14px;
+      outline:none;
+    }
+    .login-card input:focus {
+      box-shadow: 0 0 0 3px rgba(0,255,255,0.04);
+      border-color: rgba(0,255,255,0.14);
+    }
+    .login-actions {
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      margin-top:14px;
+    }
+    .login-actions button {
+      padding:8px 14px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, #0b1720, #071016);
+      color:#dfeff0;
+      cursor:pointer;
+      font-family: 'Courier New', monospace;
+      font-size:14px;
+    }
+    .login-actions .muted {
+      background: transparent;
+      color:#9aa3a6;
+      border:1px dashed rgba(255,255,255,0.03);
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGIN OVERLAY -->
+  <div id="login-overlay" aria-hidden="false" style="z-index:9999;">
+    <div class="login-card" role="dialog" aria-labelledby="login-title" aria-modal="true">
+      <h2 id="login-title">ARCHIEF TOEGANG</h2>
+      <p class="login-sub">Voer gebruikersnaam en wachtwoord in om toegang te krijgen tot het Frost Archief.</p>
+      <label for="login-user">Gebruikersnaam</label>
+      <input id="login-user" type="text" autocomplete="username" />
+      <label for="login-pass">Wachtwoord</label>
+      <input id="login-pass" type="password" autocomplete="current-password" />
+      <div class="login-actions">
+        <button id="login-btn" type="button">Inloggen</button>
+        <button id="login-reset" type="button" class="muted">Wissen</button>
+      </div>
+      <div id="login-error" role="status" aria-live="polite" style="display:none;color:#ff6b6b;margin-top:8px;font-size:13px;">Ongeldige gegevens.</div>
+      <div class="login-hint" style="margin-top:10px;font-size:12px;color:#888;">Tip: de archiefhouder kent de sleutel.</div>
+    </div>
+  </div>
+  <div class="container">
+    <header>
+      <div class="header-top">
+        <div class="server-light"></div>
+        <h1>HET FROST ARCHIEF</h1>
+      </div>
+      <div class="header-subtitle">Toegangsniveau: Onbekend | Laatst bijgewerkt: 24 december 2025</div>
+    </header>
+
+    <div class="intro">
+      <p>"De fragmenten wachten — verspreid over beeld, klank, licht, echo, geloof…
+En tijd."</p>
+      <div class="database-access">
+        &gt; Accessing archive database...<span class="blink-cursor">_</span><br>
+        <span style="color:#666; opacity:0.45;">> Some useful data may be buried in the footer sector...</span>
+      </div>
+    </div>
+
+    <div class="gallery-section">
+      <div class="gallery-header">[ARCHIEF BESTANDEN — 6 ITEMS GEVONDEN]</div>
+      <div class="gallery-grid">
+        <div class="image-item error">
+          <img src="images/lake.jpeg" alt="The Mirror Lake">
+          <div class="tooltip">Afbeeldingsdata decoderen... Mislukt</div>
+          <div class="image-label">IMG_FROST_001.jpg</div>
+        </div>
+
+        <div class="image-item error">
+         <img src="images/woodenbridge.jpeg" alt="The Frozen Bridge">
+          <div class="tooltip">Afbeeldingsdata decoderen... Mislukt</div>
+          <div class="image-label">IMG_FROST_002.jpg</div>
+        </div>
+
+        <div class="image-item error">
+          <img src="images/railway.jpeg" alt="The Railway to Nowhere">
+          <div class="tooltip">Afbeeldingsdata decoderen... Mislukt</div>
+          <div class="image-label">IMG_FROST_003.jpg</div>
+        </div>
+
+        <div class="image-item error">
+          <img src="images/woodencabin.jpeg" alt="The Cabin Light">
+          <div class="tooltip">Afbeeldingsdata decoderen... Mislukt</div>
+          <div class="image-label">IMG_FROST_004.jpg</div>
+        </div>
+
+        <div class="image-item error">
+          <img src="images/street.jpeg" alt="The Silent Street">
+          <div class="tooltip">Afbeeldingsdata decoderen... Mislukt</div>
+          <div class="image-label">IMG_FROST_005.jpg</div>
+        </div>
+
+        <a href="images/Steganography.png" download="FROST_ARCHIVE_006.jpg" class="image-item correct-image" title="Klik om te downloaden">
+          <img src="images/clocktower.jpg" alt="The Clock Tower">
+          <div class="tooltip">Gedeeltelijke overeenkomst gevonden</div>
+          <div class="image-label">IMG_FROST_006.jpg</div>
+        </a>
+      </div>
+    </div>
+
+    <footer>
+      <div>© I.C. Frost — 24 december 2025</div>
+      <div class="footer-status">Verbinding instabiel... opnieuw proberen...</div>
+      <div class="footer-error">[ERR_CONNECTION_TIMEOUT] :: retry attempt 847/∞</div>
+      <div class="footer-hidden">https://stylesuxx.github.io/steganography/</div>
+    </footer>
+
+</div>
+  <script>
+    (function(){
+      const overlay = document.getElementById('login-overlay');
+      const userInput = document.getElementById('login-user');
+      const passInput = document.getElementById('login-pass');
+      const btn = document.getElementById('login-btn');
+      const resetBtn = document.getElementById('login-reset');
+      const error = document.getElementById('login-error');
+      const validUser = 'icfrost';
+      const validPass = 'icfrost2025';
+
+      // focus first field
+      userInput.focus();
+
+      function showError(msg) {
+        error.textContent = msg || 'Ongeldige gegevens.';
+        error.style.display = 'block';
+        overlay.querySelector('.login-card').animate([
+          { transform: 'translateX(0)' },
+          { transform: 'translateX(-8px)' },
+          { transform: 'translateX(8px)' },
+          { transform: 'translateX(0)' }
+        ], { duration: 300, iterations: 1 });
+      }
+
+      function success() {
+        // hide overlay and allow access
+        overlay.style.display = 'none';
+        overlay.setAttribute('aria-hidden', 'true');
+        // optionally store in session so page remains open on reload
+        try { sessionStorage.setItem('frost-auth', '1'); } catch(e){}
+      }
+
+      // if session already authenticated, skip login
+      try {
+        if (sessionStorage.getItem('frost-auth') === '1') {
+          overlay.style.display = 'none';
+          overlay.setAttribute('aria-hidden', 'true');
+        }
+      } catch(e){}
+
+      btn.addEventListener('click', () => {
+        const u = (userInput.value || '').trim();
+        const p = (passInput.value || '').trim();
+        if (u.toLowerCase() === validUser && p === validPass) {
+          success();
+        } else {
+          showError('Gebruikersnaam of wachtwoord onjuist.');
+        }
+      });
+
+      resetBtn.addEventListener('click', () => {
+        userInput.value = '';
+        passInput.value = '';
+        error.style.display = 'none';
+        userInput.focus();
+      });
+
+      // allow Enter to submit
+      [userInput, passInput].forEach(el => {
+        el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            btn.click();
+          }
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    // ⛔ Rechter muisklik en Control+klik uitschakelen
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    // ⛔ Command+klik (Mac) of Ctrl+klik blokkeren bij links
+    document.addEventListener('click', event => {
+      if (event.metaKey || event.ctrlKey) {
+        event.preventDefault();
+      }
+    });
+  </script>
+</body>
+</html>
